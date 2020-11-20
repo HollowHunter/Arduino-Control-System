@@ -1,17 +1,18 @@
-#include <Ultrasonic.h>
-
 #include <Servo.h>
 
+// Пример программы, которая управляет двумя светодиодами, сервоприводом, а так же отпрваляет данные потенцометра
+
 Servo myservo;
-Ultrasonic ultrasonic(9, 8);
+
+byte index;
+long last_time = 0;
 
 #define PARSE_AMOUNT 2
 int intData[PARSE_AMOUNT];     // массив численных значений после парсинга
 boolean recievedFlag;
 boolean getStarted;
-byte index;
-long last_time = 0;
 String string_convert = "";
+
 void parsing() {
   if (Serial.available() > 0) {
     char incomingByte = Serial.read();        // обязательно ЧИТАЕМ входящий символ
@@ -40,22 +41,17 @@ void parsing() {
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Hello, im arduino");
-  Serial.setTimeout(10);
   myservo.attach(4);
   pinMode(A3, 1);
   pinMode(A2, 1);
   pinMode(A1, INPUT);
-  pinMode(3, 1);
-  pinMode(5, 1);
-  pinMode(6, 1);
 
 }
 
 void loop() {
   parsing();
   if (recievedFlag) {                           // если получены данные
-    recievedFlag = false;
+    recievedFlag = false;                       // В intData[0] хранится индекс, а в intData[1] - команда
     switch (intData[0]) {
       case 1:
         digitalWrite(A3, intData[1]);
@@ -63,31 +59,15 @@ void loop() {
       case 2:
         digitalWrite(A2, intData[1]);
         break;
-      case 3:
-        digitalWrite(A1, intData[1]);
-        break;
-      case 4:
-        analogWrite(3, intData[1]);
-        break;
-      case 5:
-        analogWrite(5, intData[1]);
-        break;
-      case 6:
-        analogWrite(6, intData[1]);
-        break;
       case 10:
         myservo.write(intData[1]);
         break;
     }
   }
-  if (millis() - last_time >= 50) {
+  if (millis() - last_time >= 50) {             // отправка данных с потенцометра на компьютер 
     last_time = millis();
     Serial.print(5);
     Serial.print(" ");
-    Serial.println(ultrasonic.read());
-    Serial.print(6);
-    Serial.print(" ");
     Serial.println(analogRead(A1));
-    
   }
 }
